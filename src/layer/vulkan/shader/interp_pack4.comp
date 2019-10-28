@@ -46,6 +46,8 @@ layout (push_constant) uniform parameter
 
     float scale_x;
     float scale_y;
+
+    int align_corners;
 } p;
 
 void main()
@@ -74,6 +76,9 @@ void main()
     {
         afpvec2 gxy = afpvec2(gx, gy);
         afpvec2 fxy = (gxy + afp(0.5f)) * afpvec2(p.scale_x, p.scale_y) - afp(0.5f);
+        if (p.align_corners == 1){
+            fxy = (gxy) * afpvec2(p.scale_x, p.scale_y);
+        }
 
         ivec2 sxy = ivec2(floor(fxy));
 

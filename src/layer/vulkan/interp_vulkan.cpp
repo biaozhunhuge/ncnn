@@ -139,7 +139,7 @@ int Interp_vulkan::forward(const VkMat& bottom_blob, VkMat& top_blob, VkCompute&
         bindings[0] = bottom_blob;
         bindings[1] = top_blob;
 
-        std::vector<vk_constant_type> constants(12);
+        std::vector<vk_constant_type> constants(13);
         constants[0].i = bottom_blob.dims;
         constants[1].i = bottom_blob.w;
         constants[2].i = bottom_blob.h;
@@ -150,8 +150,15 @@ int Interp_vulkan::forward(const VkMat& bottom_blob, VkMat& top_blob, VkCompute&
         constants[7].i = top_blob.h;
         constants[8].i = top_blob.c;
         constants[9].i = top_blob.cstep;
-        constants[10].f = w / (float)outw;
-        constants[11].f = h / (float)outh;
+		constants[10].f = w / (float)outw;
+		constants[11].f = h / (float)outh;
+		
+		if (align_corners == 1)
+		{
+			constants[10].f = (w - 1) / (float)(outw - 1);
+			constants[11].f = (h - 1) / (float)(outh - 1);
+		}
+		constants[12].i = align_corners;
 
         const Pipeline* pipeline = elempack == 4 ? pipeline_interp_pack4 : pipeline_interp;
 
