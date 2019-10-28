@@ -35,6 +35,7 @@ public:
     float height_scale;
     int output_width;
     int output_height;
+	int align_corners;
 };
 
 } // namespace ncnn

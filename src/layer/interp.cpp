@@ -32,17 +32,24 @@ int Interp::load_param(const ParamDict& pd)
     width_scale = pd.get(2, 1.f);
     output_height = pd.get(3, 0);
     output_width = pd.get(4, 0);
-
+	align_corners = pd.get(5, 0);
     return 0;
 }
 
-static void linear_coeffs(int w, int outw, int* xofs, float* alpha)
+static void linear_coeffs(int w, int outw, int* xofs, float* alpha, int align_corners = 0)
 {
-    double scale = (double)w / outw;
-
+	double scale = (double)w / outw;
+	if (align_corners == 1) {
+		scale = (double)(w - 1) / (outw - 1);
+	}
+	
     for (int dx = 0; dx < outw; dx++)
     {
         float fx = (float)((dx + 0.5) * scale - 0.5);
+		if (align_corners == 1) {
+			fx = dx * scale;
+		}
+	
         int sx = floor(fx);
         fx -= sx;
 
@@ -460,8 +467,8 @@ int Interp::forward(const Mat &bottom_blob, Mat &top_blob, const Option& opt) co
         float* alpha = (float*)(buf + ow + oh);//new float[ow * 2];
         float* beta = (float*)(buf + ow + oh + ow*2);//new float[oh * 2];
 
-        linear_coeffs(w, ow, xofs, alpha);
-        linear_coeffs(h, oh, yofs, beta);
+        linear_coeffs(w, ow, xofs, alpha, this->align_corners);
+        linear_coeffs(h, oh, yofs, beta, this->align_corners);
 
         #pragma omp parallel for num_threads(opt.num_threads)
         for (int q = 0; q < c; ++q)
